@@ -1,0 +1,506 @@
+
+    
+templates:
+    interest_rate_setter:
+        cost_interest_rate:
+            data: 0.073
+            index: monetary
+            dims: costs
+
+
+techs: 
+    #Supply:
+    pv_openfield:
+        name: 'openfield pv'
+        base_tech: supply
+        template: interest_rate_setter
+        carrier_out: electricity
+        source_unit: per_cap
+        flow_cap_max: 7600000 # groningen
+      #  flow_cap_max: 532688000 # Ita2
+        lifetime: 40
+        cost_flow_cap: 
+            data: 380 # EUR/kW
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.025 # EUR/kw/year
+            index: monetary
+            dims: costs
+       
+    wind_onshore:
+        name: 'onshore wind turbine'
+        base_tech: supply
+        template: interest_rate_setter
+        carrier_out: electricity
+        source_unit: per_cap
+        flow_cap_max: 2100000 # groningen
+    #    flow_cap_max: 103263000 # Ita2
+        lifetime: 30
+        cost_flow_cap:
+            data: 1150 #EUR/kW
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.002
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.015 #EUR/kW/year
+            index: monetary
+            dims: costs
+     
+    wind_offshore:
+        name: 'offshore wind turbine'
+        base_tech: supply
+        template: interest_rate_setter
+        carrier_out: electricity
+        source_unit: per_cap
+        flow_cap_max: 43000000 # groningen
+    #    flow_cap_max: 55352000 # Ita2
+        lifetime: 30
+        cost_flow_cap:
+            data: 2390 #EUR/kW
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.022 #EUR/kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.0034
+            index: monetary
+            dims: costs            
+    
+    # Demand
+    
+    demand_Indh:
+        name: 'individual heat demand'
+        base_tech: demand
+        carrier_in: heat_Indh
+        sink_unit: absolute
+            
+    demand_electricity:
+        name: 'electricity demand'
+        base_tech: demand
+        carrier_in: electricity
+        sink_unit: absolute
+    demand_Dh:
+        name: 'district heating demand'
+        base_tech: demand
+        carrier_in: heat_Dh
+        sink_unit: absolute
+    demand_hydrogen:
+        name: 'hydrogen demand'
+        base_tech: demand
+    #    active: true
+        carrier_in: hydrogen
+        sink_unit: absolute
+    curtailment:
+        name: 'electricity curtailment modeled as a sink'
+        base_tech: demand
+        carrier_in: electricity
+        sink_unit: absolute
+        sink_use_max: 10000000000
+    heat_removal:
+        name: 'electricity curtailment modeled as a sink'
+        base_tech: demand
+        carrier_in: heat_waste
+        sink_unit: absolute
+        sink_use_max: 10000000000
+
+        
+
+            
+    # Conversion
+    
+            
+    electric_heater_Indh:
+        name: 'electric heater for individual heat purpose'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: heat_Indh
+        flow_out_eff: 1
+        lifetime: 30
+        cost_flow_cap:
+            data: 853 #EUR/kW
+            index: [[monetary, heat_Indh]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.009 #EUR/kW/year
+            index: monetary
+            dims: costs
+    
+    electric_heater_Dh:
+        name: 'electric heater for district heating'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: heat_Dh
+        flow_out_eff: 1
+        lifetime: 25
+        capacity_factor_max: 0.06
+        cost_flow_cap:
+            data: 150 #EUR/kW
+     #       data: 910
+            index: [[monetary, heat_Dh]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.007 #EUR/kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.001
+            index: [[monetary, heat_Dh]]
+            dims: [costs, carriers]
+
+    hp_dh: 
+        name: 'heat pump for district heating'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: heat_Dh
+   #     flow_out_eff: 2.5
+        lifetime: 25
+  #      active: true
+        cost_flow_cap:
+            data: 810 #EUR/kW
+            index: [[monetary, heat_Dh]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.002 #EUR/kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.0018
+            index: [[monetary, heat_Dh]]
+            dims: [costs, carriers]
+               
+        
+  
+    hp_Indh: 
+        name: 'heat pump for other heating demands'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: heat_Indh
+        flow_cap_max: 
+            data: 1200000 #Groningen
+            index: heat
+            dims: carriers
+    #    flow_out_eff: 3.6
+        lifetime: 25
+        cost_flow_cap:
+            data: 1321 #EUR/kW
+            index: [[monetary, heat_Indh]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.024 #EUR/kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0
+            index: [[monetary, heat_Indh]]
+            dims: [costs, carriers]
+
+    chp_Dh: 
+        name: 'combined heat and power'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: hydrogen
+    #    active: true
+        carrier_out: [electricity, heat_waste]
+        flow_out_eff:
+            data: 0.42
+            index: electricity
+            dims: carriers
+        heat_to_power_ratio: 0.8  
+     #   electricity_efficiency_high: 0.42
+      #  electricity_efficiency_low: 0.3
+     #   heat_recovery_eff_chp: 0.8
+        lifetime: 10
+        cost_flow_cap: 
+            data: 1170 #EUR/kW      
+            index: [[monetary, electricity]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.05 #EUR/kW/year  
+            index: monetary
+            dims: costs
+
+    fuel_cell:
+        name: 'fuel cell for electricity generation without heat recovery'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: hydrogen
+        carrier_out: electricity
+   #     active: true
+        flow_out_eff:
+            data: 0.42
+            index: electricity
+            dims: carriers
+        lifetime: 10
+        cost_flow_cap: 
+            data: 1170 #EUR/kW      
+            index: [[monetary, electricity]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.05 #EUR/kW/year  
+            index: monetary
+            dims: costs   
+    p2hh:
+        name: 'Alkaline electrolyzer as power to heat and hydrogen system'
+        base_tech: conversion
+    #    active: true
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: [hydrogen, heat_waste]
+        flow_out_eff: 
+            data: 0.705
+            index: hydrogen
+            dims: carriers
+    #    hydrogen_efficiency_high: 0.75
+     #   hydrogen_efficiency_low: 0.5
+      #  heat_recovery_eff: 0.8
+     #   heat_to_hydrogen_ratio: 0.2
+        lifetime: 25
+        cost_flow_cap:
+            data: 950
+            index: [[monetary, electricity]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.002 
+            index: monetary
+            dims: costs
+
+
+    electrolyser:
+        name: 'electrolyzer for hydrogen production without heat recovery'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: hydrogen
+        flow_out_eff: 
+            data: 0.705
+            index: hydrogen
+            dims: carriers
+        lifetime: 25
+        cost_flow_cap:
+            data: 950 
+            index: [[monetary, electricity]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.02 
+            index: monetary
+            dims: costs
+    heat_recovery:
+        name: 'heat recovery facilities from the electrolyzer to Dh'
+        base_tech: conversion
+        template: interest_rate_setter
+        carrier_in: heat_waste
+        carrier_out: heat_Dh
+        flow_out_eff: 0.9
+        lifetime: 15
+        cost_flow_cap: 
+            data: 576 #EUR/kW
+            index: [[monetary, heat_waste]]
+            dims: [costs, carriers]
+        cost_om_annual_investment_fraction:
+            data: 0.02 #EUR/kW/year
+            index: monetary
+            dims: costs
+ 
+    # Storage 
+    
+    hydrogen_tank:
+        name: 'compressed hydrogen storage in tanks'
+        base_tech: storage
+        carrier_in: hydrogen
+        carrier_out: hydrogen
+     #   active: false
+        template: interest_rate_setter
+        flow_cap_per_storage_cap_equals: 0.005
+        flow_in_eff: 0.89
+        flow_out_eff: 1
+        storage_loss: 0
+        lifetime: 30
+        cost_storage_cap: 
+            data: 48 #EUR/kWh
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.01 #EUR/kW/year
+            index: monetary
+            dims: costs
+    
+
+    hydrogen_cavern:
+        name: 'compressed hydrogen storage in caverns'
+        base_tech: storage
+        carrier_in: hydrogen
+        carrier_out: hydrogen
+        template: interest_rate_setter
+        flow_cap_per_storage_cap_equals: 0.11
+        flow_out_eff: 0.99
+        flow_in_eff: 1
+  #      storage_inter_max: 31000000000
+        storage_loss: 0
+        lifetime: 100
+        cost_storage_cap: 
+            data: 2.09 #EUR/kWh
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0 #EUR/kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.000000024    #EUR/kWh/year    
+            index: monetary
+            dims: costs       
+    heat_storage_small:
+        name: 'small water tank'
+        base_tech: storage
+        carrier_in: heat_Indh
+        carrier_out: heat_Indh
+        template: interest_rate_setter
+        flow_cap_per_storage_cap_equals: 6.67 
+        storage_loss: 0.021
+        lifetime: 30
+        cost_storage_cap:
+            data: 420 # EUR/kWh
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.04 # EUR/ kW/year
+            index: monetary
+            dims: costs
+        cost_flow_out: 
+            data: 0.0012 # EUR/ kWh
+            index: monetary
+            dims: costs    
+    heat_storage_large:
+        name: 'large water tank'
+        base_tech: storage
+        carrier_in: heat_Dh
+        carrier_out: heat_Dh
+     #   cap_method: integer
+      #  storage_cap_min: 175000
+        template: interest_rate_setter
+        flow_cap_per_storage_cap_equals: 0.0166 
+        storage_loss: 0.0001
+        lifetime: 40
+        cost_storage_cap:
+            data: 4.11 # EUR/kWh
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.003 # EUR/ kWh/year
+            index: monetary
+            dims: costs
+ 
+    heat_storage_pit:
+        name: 'pit thermal energy storage'  
+        base_tech: storage
+        carrier_in: heat_Dh
+        carrier_out: heat_Dh
+        template: interest_rate_setter
+        flow_cap_per_storage_cap_equals: 0.0067
+        storage_loss: 0.000062
+        lifetime: 25
+        cost_storage_cap:
+            data: 1.54
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.005
+            index: monetary
+            dims: costs
+            
+    
+    battery:
+        name: 'battery storage'
+        base_tech: storage
+        template: interest_rate_setter
+        carrier_in: electricity
+        carrier_out: electricity
+     #   flow_cap_max: inf
+      #  storage_cap_max: inf
+        flow_out_eff: 0.91
+    #    storage_loss: 0
+    #    lifetime: 25
+        lifetime: 20
+        flow_cap_per_storage_cap_equals: 1
+        cost_storage_cap:
+       #     data: 660 # EUR/kWh
+            data: 280 # converted from $2016 data from schmidt 2019
+            index: monetary
+            dims: costs
+   #     cost_flow_cap:
+         #   data: 170
+    #        data: 147 
+     #       index: monetary
+      #      dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.029 #EUR/kW/year
+            index: monetary
+            dims: costs
+   #     cost_flow_out: 
+    #        data: 0.00065 # EUR/kWh
+     #       index: monetary
+      #      dims: costs
+        
+   
+   # Transmission
+        
+    pipeline_new:        
+        name: 'newly-built hydrogen pipeline transmission'
+        base_tech: transmission
+        from: Groningen
+        to: Industry
+        carrier_in: hydrogen
+        carrier_out: hydrogen
+
+    #    active: true
+        template: interest_rate_setter
+    #    flow_cap_max: 1500000
+        flow_in_eff: 0.99
+        lifetime: 50
+        one_way: true
+     #   cost_flow_cap_per_distance:
+      #      data: 0.55
+       #     index: monetary
+        #    dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.04
+            index: monetary
+            dims: costs
+    
+    
+    overhead_line:
+        name: 'electricity cable transmission '
+        base_tech: transmission
+        from: Groningen
+        to: Industry
+        carrier_in: electricity
+        carrier_out: electricity
+    #    flow_cap_max: 1440000
+        one_way: true
+   #     distance: 200
+       # active: false
+        inherit: interest_rate_setter
+   #     flow_in_eff_per_distance: 1
+        flow_in_eff: 0.986
+        lifetime: 40
+        cost_flow_cap:
+            data: 52
+            index: monetary
+            dims: costs
+        cost_om_annual_investment_fraction:
+            data: 0.015
+            index: monetary
+            dims: costs
+                   
+                    
+    

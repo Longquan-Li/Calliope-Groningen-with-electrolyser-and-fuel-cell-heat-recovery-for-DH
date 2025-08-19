@@ -1,0 +1,40 @@
+nodes:
+    Groningen:
+        latitude: 53.2194
+        longitude: 6.5665
+        techs:
+            demand_Indh:
+            demand_electricity:
+            demand_Dh:             
+            p2hh:
+            heat_removal: 
+            electrolyser:
+            fuel_cell:
+            chp_Dh:
+        #    heat_storage_pit:
+            hydrogen_cavern:
+                active: false
+            curtailment:
+            hydrogen_tank:     
+            heat_storage_small:
+            hp_Indh:
+            heat_recovery:
+            hp_dh:
+            electric_heater_Indh:
+            electric_heater_Dh:
+            heat_storage_large:
+            battery:           
+            pv_openfield:
+            wind_onshore:
+            wind_offshore:
+            
+    Industry:
+        latitude: 51.7654
+        longitude: 4.5096
+        techs:
+            demand_hydrogen:
+        #        active: true
+            electrolyser:
+            hydrogen_tank:
+            battery:
+       
