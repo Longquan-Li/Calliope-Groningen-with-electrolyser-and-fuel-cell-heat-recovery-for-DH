@@ -1,0 +1,48 @@
+variables:
+  piecewise_cost_investment:
+    description: “Investment cost that increases monotonically”
+    foreach: [nodes, techs, costs]
+    where: "[pipeline_new] in techs"
+    bounds:
+      min: 0
+      max: .inf
+    default: 0
+#global_expressions:
+ # cost_investment:
+  #  where: >
+   #   (cost_investment_flow_cap OR cost_investment_storage_cap
+    #  OR cost_investment_source_cap OR cost_investment_area_use
+     # OR cost_investment_purchase OR piecewise_cost_investment)
+   # equations:
+    #  - expression: >
+     #     sum(default_if_empty(cost_investment_flow_cap, 0), over=carriers) +
+      #    default_if_empty(cost_investment_storage_cap, 0) +
+       #   default_if_empty(cost_investment_source_cap, 0) +
+        #  default_if_empty(cost_investment_area_use, 0) +
+         # default_if_empty(cost_investment_purchase, 0) +
+          #default_if_empty(piecewise_cost_investment, 0)
+global_expressions:
+  cost_investment_flow_cap:
+    where: "(flow_cap AND (cost_flow_cap OR cost_flow_cap_per_distance)) OR piecewise_cost_investment"
+    equations:
+      - expression: "$cost_sum * flow_cap"
+        where: "NOT [pipeline_new] in techs"
+      - expression: "1.0 * piecewise_cost_investment"
+        where: "[pipeline_new] in techs"
+piecewise_constraints:
+#  overhead_line_piecewise_costs:
+ #   description: Set investment costs values along a piecewise curve using special ordered sets of type 2 (SOS2).
+#    foreach: [nodes, techs, carriers, costs]
+ #   where: "[overhead_line] in techs"
+  #  x_expression: flow_cap
+#    x_values: capacity_steps_o
+ #   y_expression: piecewise_cost_investment
+  #  y_values: cost_steps_o
+  pipeline_piecewise_costs:
+    description: Set investment costs values along a piecewise curve using special ordered sets of type 2 (SOS2).
+    foreach: [nodes, techs, carriers, costs]
+    where: "[pipeline_new] in techs"
+    x_expression: flow_cap
+    x_values: capacity_steps
+    y_expression: piecewise_cost_investment
+    y_values: cost_steps

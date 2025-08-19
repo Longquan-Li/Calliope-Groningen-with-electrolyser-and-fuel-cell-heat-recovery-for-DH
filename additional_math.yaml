@@ -1,0 +1,72 @@
+constraints:
+
+# Assumption of P2hh and h2-ChP operation: They could be either operated or shut down in every time step. When they are operated the hydrogen generation/electricity generation efficiencies fall in the given range. 
+
+# P2hh. The upper and lower hydrogen generation efficiencies are first limited and then the heat generation is defined based on the hydrogen generation efficiency and the assumption that the recoverable heat is 97% of the input electricity (the rest 3% is in the form of unrecoverable heat) minus the hydrogen generation.   
+
+#  high_hydrogen:
+ #   description: hydrogen generation under high hydrogen efficiency
+  #  foreach: [nodes, techs, timesteps]
+  #  where: "[p2hh] in techs" 
+   # equations:
+    #  - expression: flow_out_inc_eff[carriers=hydrogen] <= sum(flow_in_inc_eff, #over=carriers) * hydrogen_efficiency_high
+      
+  #low_hydrogen:
+   # description: hydrogen generation under low hydrogen efficiency
+   # foreach: [nodes, techs, timesteps]
+  #  where: "[p2hh] in techs" 
+   # equations:
+    #  - expression: sum(flow_in_inc_eff, over=carriers) * hydrogen_efficiency_low <= flow_out_inc_eff[carriers=hydrogen]
+      
+  heat_efficiency:
+    description: connecting heat generation and hydrogen generation
+    foreach: [nodes, techs, timesteps]
+    where: "[p2hh] in techs"
+    equations: 
+      - expression: flow_out[carriers=heat_waste] == sum(flow_in_inc_eff, over=carriers) * 0.97 - flow_out[carriers=hydrogen]
+      
+# h2-ChP. The upper and lower electricity generation efficiencies are first limited and then the heat generation is defined based on the electricity generation efficiency and the assumption that 80% of the heat generated is recoverable.
+      
+#  high_electricity:
+ #   description: electricity generation under high electricity efficiency
+  #  foreach: [nodes, techs, timesteps]
+   # where: "[chp_Dh] in techs" 
+    #equations:
+     # - expression: flow_out[carriers=electricity] <= sum(flow_in_inc_eff, #over=carriers) * electricity_efficiency_high
+      
+      
+#  low_electricity:
+ #   description: electricity generation under low electricity efficiency
+  #  foreach: [nodes, techs, timesteps]
+   # where: "[chp_Dh] in techs" 
+    #equations:
+     # - expression: sum(flow_in_inc_eff, over=carriers) * #electricity_efficiency_low <= flow_out[carriers=electricity]
+      
+  link_chp_outputs:
+    description: Fix the relationship between heat and electricity output
+    foreach: [nodes, techs, timesteps]
+    where: "[chp_Dh] in techs" 
+    equations:
+      - expression: flow_out[carriers=heat_waste] == flow_out[carriers=electricity] * heat_to_power_ratio
+ 
+  annual_capacity_factor_max:
+    description: >
+      Limit the upper bound of annual technology operation as a
+      fraction of annual operation at maximum capacity.
+    foreach: [nodes, techs, carriers]
+    where: capacity_factor_max
+    equations:
+      - expression: >
+          sum(flow_out * timestep_weights, over=timesteps) <=
+          flow_cap * capacity_factor_max * $total_time
+    sub_expressions:
+      total_time: &total_time
+        - expression: sum(timestep_resolution * timestep_weights, over=timesteps)    
+  balance_conversion:
+    equations:
+      - where: "NOT [p2hh, chp_Dh] in techs"
+        expression: sum(flow_out_inc_eff, over=carriers) == sum(flow_in_inc_eff, over=carriers)
+      - where: "[p2hh] in techs"
+        expression: flow_out_inc_eff[carriers=hydrogen] == sum(flow_in_inc_eff, over=carriers)
+      - where: "[chp_Dh] in techs"
+        expression: flow_out_inc_eff[carriers=electricity] == sum(flow_in_inc_eff, over=carriers)  

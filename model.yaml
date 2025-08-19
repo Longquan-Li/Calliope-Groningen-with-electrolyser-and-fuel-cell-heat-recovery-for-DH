@@ -1,0 +1,132 @@
+import:  
+    - 'model_config/techs.yaml' 
+    - 'model_config/locations.yaml'  
+
+scenarios:
+    whr_fc: ["no_p2hh"]
+    whr_el: ["no_chp"]
+    whr_none: ["no_p2hh", "no_chp"]
+    no_h2demands: ["no_h2demand"]
+    caverns: ["cavern"]
+    no_h2demands_noWHR: ["no_h2demand", "no_p2hh", "no_chp"]
+
+    
+
+
+
+overrides:
+    no_p2hh:
+        techs.p2hh.active: false
+    no_chp:
+        techs.chp_Dh.active: false
+    no_h2demand:
+        nodes.Industry.techs.demand_hydrogen.active: false
+    cavern:
+        nodes.Groningen.techs.hydrogen_cavern.active: true
+
+config:
+    init:
+        name: '2nodes model'
+        calliope_version: 0.7.0
+        time_subset: ["2016-01-01", "2016-12-31"]
+        add_math: [additional_math.yaml, scaling_effect.yaml]
+        time_resample: 3h
+    build:
+        mode: plan
+        backend: gurobi
+      #  ensure_feasibility: true
+    solve:
+        solver: gurobi
+        solver_options:
+      #  shadow_prices: ["system_balance", "balance_demand"]
+          #  Threads: 6
+         #   Method: 2
+         #   Crossover: 0
+                
+parameters:
+    objective_cost_weights:
+        data: 1
+        index: monetary
+        dims: costs
+        
+    capacity_steps:
+        data: [0, 250000, 500000, 1000000, 4000000]
+        index: [0, 1, 2, 3, 4]
+        dims: breakpoints
+    cost_steps:
+        data: [0, 8e7, 1.1e8, 1.4e8, 3.2e8]
+        index: [0, 1, 2, 3, 4]
+        dims: breakpoints
+ #   capacity_steps_o:
+  #      data: [0, 50000, 100000, 1440000]
+   #     index: [0, 1, 2, 3]
+    #    dims: breakpoints
+  #  cost_steps_o:
+   #     data: [0, 5.3e6, 7.4e7, 3.2e8]
+    #    index: [0, 1, 2, 3]
+     #   dims: breakpoints
+     
+data_sources:
+    pv_resource:
+        source: data_sources/capacityfactors-open-field-pv.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: source_use_equals
+            techs: pv_openfield
+
+    onshore_wind:
+        source: data_sources/capacityfactors-wind-onshore.csv   
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: source_use_equals
+            techs: wind_onshore
+            
+    offshore_wind:
+        source: data_sources/capacityfactors-wind-offshore.csv 
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: source_use_equals
+            techs: wind_offshore
+    heat_demand:
+        source: data_sources/demand-heat.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: sink_use_equals
+            techs: demand_Indh
+
+    electricity_demand:
+        source: data_sources/demand-electricity.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: sink_use_equals
+            techs: demand_electricity
+  
+    hydrogen_demand:
+        source: data_sources/demand-hydrogen.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: sink_use_equals
+            techs: demand_hydrogen
+    Dh_demand:
+        source: data_sources/demand-Dh.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: sink_use_equals
+            techs: demand_Dh
+    hourly_cop_hp:
+        source: data_sources/cop-hp-hour.csv
+        rows: timesteps
+        columns: nodes
+        add_dims:
+            parameters: flow_out_eff
+            techs: [hp_dh, hp_Indh]
+
+
+     
